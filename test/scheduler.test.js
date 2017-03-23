@@ -1,7 +1,7 @@
 const expect = require('expect');
-const Task = require('../components/task').Task;
-const Scheduler = require('../components/scheduler').Scheduler;
-const Storage = require('../components/storage').Storage;
+const Task = require('../lib/task').Task;
+const Scheduler = require('../lib/scheduler').Scheduler;
+const Storage = require('../lib/storage').Storage;
 const Logger = require('./logger');
 const Promise = require("bluebird");
 

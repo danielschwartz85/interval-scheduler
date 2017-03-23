@@ -1,5 +1,5 @@
 const expect = require('expect');
-const Redis = require('../redisStorage/redisClient').Redis;
+const Redis = require('./redisClient').Redis;
 const Logger = require('./logger');
 const bluebird = require('bluebird');
 const fs = bluebird.promisifyAll(require("fs"));

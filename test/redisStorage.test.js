@@ -1,5 +1,5 @@
 const expect = require('expect');
-const Storage = require('../redisStorage/redisStorage').RedisStorage;
+const Storage = require('./redisStorage').RedisStorage;
 const Logger = require('./logger');
 
 describe('redisStorage', () => {

@@ -2,6 +2,7 @@
   "name": "interval-scheduler",
   "version": "1.0.0",
   "description": "dynamically schedule interval tasks",
+  "main": "./main.js",
   "scripts": {
     "test": "mocha test/*.js"
   },
@@ -13,5 +14,10 @@
   "devDependencies": {
     "mocha": "3.1.2",
     "expect": "1.20.2"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/capriza/interval-scheduler.git"
+  },
+  "license": "MIT"
 }
