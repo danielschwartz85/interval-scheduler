@@ -1,6 +1,5 @@
 const expect = require('expect');
-const Storage = require('./redisStorage').RedisStorage;
-const Logger = require('./logger');
+const Storage = require('../lib/redisStorage/redisStorage');
 
 describe('redisStorage', () => {
 
@@ -12,7 +11,6 @@ describe('redisStorage', () => {
     ];
 
     before(done => {
-        Logger.init({ isMaster : true });
         let config = {
             instances: [
                 { host: 'localhost', port: '1234', db: 0 },

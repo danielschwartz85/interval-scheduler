@@ -1,6 +1,5 @@
 const expect = require('expect');
-const Redis = require('./redisClient').Redis;
-const Logger = require('./logger');
+const Redis = require('../lib/redisStorage/redisClient');
 const bluebird = require('bluebird');
 const fs = bluebird.promisifyAll(require("fs"));
 
@@ -9,7 +8,6 @@ describe('lua', () => {
     let redis;
 
     before(done => {
-        Logger.init({ isMaster : true });
         redis = new Redis({ host: 'localhost', port: '6379', db: 0 });
         redis.connect().then(done).catch(() => {
             redis = undefined;
@@ -396,7 +394,6 @@ describe('redisClient', () => {
     };
 
     before(done => {
-        Logger.init({ isMaster : true });
         redis = new Redis({ host: 'localhost', port: '1234', db: 0 });
         expect.spyOn(redis, 'connect').andCall(() => {
             redis._client = redisClientMock;

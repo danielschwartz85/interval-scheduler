@@ -1,8 +1,7 @@
 const expect = require('expect');
-const Task = require('../lib/task').Task;
-const Scheduler = require('../lib/scheduler').Scheduler;
-const Storage = require('../lib/storage').Storage;
-const Logger = require('./logger');
+const Task = require('../lib/task');
+const Scheduler = require('../lib/scheduler');
+const Storage = require('../lib/storage');
 const Promise = require("bluebird");
 
 describe('scheduler', () => {
@@ -10,7 +9,6 @@ describe('scheduler', () => {
     let scheduler;
 
     before(done => {
-        Logger.init({ isMaster : true });
         let config = {
             storage : {
                 instances: [
