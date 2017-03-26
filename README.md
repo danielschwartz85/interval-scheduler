@@ -21,24 +21,24 @@ class MyTaskObject extends Task {
         this.userId = userId;
     }
 
-    // serialize task to string
+    // Serialize task to string
     // return whatever, scheduler will call your handler with this string.
     serialize() {
         return JSON.stringify({ userId: this.userId, taskType: 'MyTask' });
     }
 
-    // when executed automatically re schedule if this returns the number of seconds
-    // if null then task is performed once.
+    // Define task interval, on task execution the task will reschedule to 
+    // this interval. If not defined the task would execute once.
     get onExecuteRescheduleTo() {
         return 60; // run this task every minute.
     }
 
-    // return unix epoch
+    // First execution time (unix epoch).
     get executeOn() {
         return Date.now(); // first execution is as fast as possible.
     }
 
-    // uniqe identifier for this task
+    // Task id to globaly identify the task
     get id() {
         `user:${userId}`
     }
