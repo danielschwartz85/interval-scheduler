@@ -128,8 +128,8 @@ scheduler.startTaskExecute(serializedTask => {
 ```
 
 #### Clearing All tasks
-#### Implemented with Redis [scan](https://redis.io/commands/scan) command
-#### Note this limitation from Redis documentation
+Implemented with Redis [scan](https://redis.io/commands/scan) command,
+Note this limitation from Redis documentation
 >The SCAN algorithm is guaranteed to terminate only if the size of the iterated collection remains bounded to a given maximum size, otherwise iterating a collection that always grows may result into SCAN to never terminate a full iteration.
 ```
 scheduler.clearAllTasks();
@@ -152,7 +152,7 @@ let options = {
 let myLogger = new MyLogger();
 let scheduler = new Scheduler(options, myLogger);
 ```
-#### options:
+###### options:
 Name | option | Default
 ------------ | ------------- | -------
 checkTasksEverySeconds | In task execution mode scheduler would wakeup every 'checkTasksEverySeconds' to check tasks. | 10 seconds
