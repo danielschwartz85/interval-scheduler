@@ -45,7 +45,7 @@ class MyTaskObject extends Task {
 }
 ```
 
-## Usage - Scheduling
+## Usage - Assigning tasks
 ```
 const Scheduler = require('interval-scheduler').Scheduler;
 let scheduler = new Scheduler();
@@ -54,13 +54,6 @@ scheduler.startTaskAccept().then(() => {
     // assign tasks
     scheduler.assignTask(new MyTaskObject(1));
     scheduler.assignTask(new MyTaskObject(2));
-});
-
-scheduler.startTaskExecute(serializedTask => {
-    let myTask = JSON.parse(serializedTask);
-    console.log('performing task..');
-    console.log(`user: ${myTask.userId}`);
-    console.log(`type: ${myTask.taskType}`);
 });
 ```
 
@@ -73,45 +66,41 @@ scheduler.startTaskAccept().then(() => {
 });
 ```
 
-## Stopping task execution
+## Usage - Start Pulling tasks
 ```
-scheduler.startTaskExecute(myExecutorFunction);
-scheduler.stopTaskExecute().then(() => {
-     // myExecutorFunction will no longer be called
-     scheduler.executingTasks; // false
-     scheduler.assignTask(new MyTaskObject(1)); // tasks are still accepted
- });
+scheduler.startTaskExecute(myTaskExecutor);
+
+let myTaskExecutor = (serializedTask) => {
+    // 'serializedTask' is what task.serialize() returned.
+    let myTask = JSON.parse(serializedTask);
+    console.log('performing task..');
+    console.log(`user: ${myTask.userId}`);
+    console.log(`type: ${myTask.taskType}`);
+};
 ```
 
-## Stopping task accept
-```
-scheduler.startTaskExecute(myExecutorFunction);
-scheduler.stopTaskAccept().then(() => {
-    scheduler.acceptingTasks; // false
-    scheduler.assignTask(new MyTaskObject(1)).catch(e => {
-        console.log(err); // 'not accepting tasks'
-    });
-    // myExecutorFunction is still called  
-});
-```
 
 ## Locking task execution (auto released)
 ```
-scheduler.startTaskExecute(serializedTask => {
+scheduler.startTaskExecute(myExecutor);
+
+let myExecutor = (serializedTask) => {
     let task = JSON.parse(serializedTask);
-    scheduler.tryAutoLock(task.id, 60).then(lock => {
-    if (lock) {
+    scheduler.tryAutoLock(task.id, 60).then(lockAquired => {
+    if (lockAquired) {
         // perform task ..
         // lock for this id would be automatically released in 60 seconds
     } else {
         // ignore this task ..
     }
-});
+};
 ```
 
 ## Locking task execution (manually released)
 ```
-scheduler.startTaskExecute(serializedTask => {
+scheduler.startTaskExecute(myTaskExecutor);
+
+let myTaskExecutor = (serializedTask) => {
     let task = JSON.parse(serializedTask);
     scheduler.tryLock(task.id).then(lock => {
     if (lock) {
@@ -124,6 +113,26 @@ scheduler.startTaskExecute(serializedTask => {
     } else {
         // ignore this task ..
     }
+}
+```
+
+## Stopping task execution
+```
+scheduler.startTaskExecute(myExecutorFunction);
+scheduler.stopTaskExecute().then(() => {
+     // myExecutorFunction will no longer be called
+     scheduler.executingTasks; // false
+     scheduler.assignTask(new MyTaskObject(1)); // OK - tasks are still accepted
+ });
+```
+
+## Stopping task accept
+```
+scheduler.startTaskExecute(myExecutorFunction);
+scheduler.stopTaskAccept().then(() => {
+    // myExecutorFunction is still called  
+    scheduler.acceptingTasks; // false
+    scheduler.assignTask(new MyTaskObject(1)) // Thorws - 'not accepting tasks'
 });
 ```
 
@@ -165,7 +174,7 @@ storage.instances[].port | Redis host port | '6379'
 storage.masterIndex | Keep scheduling internal and external locks and metadata on this Redis instance, this Redis would take up most memory for the scheduling process. | 0 (first instance)
 
 ## Limitations
-- when setting the same task (by task id) twice the task is simply updated, the task interval and meta data are updated but **only after the task executes**. For example if the task interval is updated to 10 minutes when it was 1 minute then the task would execute in 1 minute and then executed again every 10 minutes.
+- When setting the same task (by task id) twice the task is simply updated, the task interval and meta data are updated but **only after the task executes**. For example if the task interval is updated to 10 minutes when it was 1 minute then the task would execute in 1 minute and then executed again every 10 minutes.
 
 ## Performance
 Method | Time | info
