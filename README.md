@@ -27,7 +27,7 @@ class MyTaskObject extends Task {
         return JSON.stringify({ userId: this.userId, taskType: 'MyTask' });
     }
 
-    // Define task interval, on task execution the task will reschedule to 
+    // Return task interval, on task execution the task would reschedule to 
     // this interval. If not defined the task would execute once.
     get onExecuteRescheduleTo() {
         return 60; // run this task every minute.
@@ -95,7 +95,7 @@ scheduler.stopTaskAccept().then(() => {
 });
 ```
 
-## Locking task execution (auto release)
+## Locking task execution (auto released)
 ```
 scheduler.startTaskExecute(serializedTask => {
     let task = JSON.parse(serializedTask);
@@ -109,7 +109,7 @@ scheduler.startTaskExecute(serializedTask => {
 });
 ```
 
-## Locking task execution (manual release)
+## Locking task execution (manually released)
 ```
 scheduler.startTaskExecute(serializedTask => {
     let task = JSON.parse(serializedTask);
@@ -164,14 +164,14 @@ storage.instances[].host | Redis host url | 'localhost'
 storage.instances[].port | Redis host port | '6379'
 storage.masterIndex | Keep scheduling internal and external locks and metadata on this Redis instance, this Redis would take up most memory for the scheduling process. | 0 (first instance)
 
-## limitations
-- when setting the same task (by task id) twice the task is simply updated, the task interval and meta data is updated but **only after the task executes**, for example if the task interval is updated to 10 minutes instead of 1 minute then the task would be executed in 1 minute and then each 10 minutes.
+## Limitations
+- when setting the same task (by task id) twice the task is simply updated, the task interval and meta data are updated but **only after the task executes**. For example if the task interval is updated to 10 minutes when it was 1 minute then the task would execute in 1 minute and then executed again every 10 minutes.
 
-## performance
+## Performance
 Method | Time | info
 ---------| --------| ------
-assignTask | O(Log(n)) | n is task bucket size (if M tasks should perform at N times then n = N)
+assignTask | O(Log(N)) | N is task bucket size (if M tasks should perform at K times then N = K)
 removeTask | O(1) | 
-when executing tasks each task peek | O(1) |
-clearAllTasks | O(N) | while n is the number of tasks (but done in iterations to protect redis CPU) 
+when executing tasks each task peek | O(1) | This is the operation that occurs every 'checkTasksEverySeconds' seconds 
+clearAllTasks | O(N) | while N is the number of tasks (but done in iterations to protect redis CPU) 
 
