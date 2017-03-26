@@ -51,7 +51,6 @@ const Scheduler = require('interval-scheduler').Scheduler;
 let scheduler = new Scheduler();
 
 scheduler.startTaskAccept().then(() => {
-    // assign tasks
     scheduler.assignTask(new MyTaskObject(1));
     scheduler.assignTask(new MyTaskObject(2));
 });
@@ -60,7 +59,6 @@ scheduler.startTaskAccept().then(() => {
 ## Removing tasks
 ```
 scheduler.startTaskAccept().then(() => {
-    // remove tasks
     scheduler.removeTask(new MyTaskObject(1));
     scheduler.removeTask(new MyTaskObject(2));
 });
@@ -71,7 +69,7 @@ scheduler.startTaskAccept().then(() => {
 scheduler.startTaskExecute(myTaskExecutor);
 
 let myTaskExecutor = (serializedTask) => {
-    // 'serializedTask' is what task.serialize() returned.
+    // 'serializedTask' is what task.serialize() returns.
     let myTask = JSON.parse(serializedTask);
     console.log('performing task..');
     console.log(`user: ${myTask.userId}`);
