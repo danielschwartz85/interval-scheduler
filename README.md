@@ -128,8 +128,8 @@ scheduler.startTaskExecute(serializedTask => {
 ```
 
 #### Clearing All tasks
-#####Implemented with Redis [scan](https://redis.io/commands/scan) command
-######Note this limitation from Redis documentation
+#### Implemented with Redis [scan](https://redis.io/commands/scan) command
+#### Note this limitation from Redis documentation
 >The SCAN algorithm is guaranteed to terminate only if the size of the iterated collection remains bounded to a given maximum size, otherwise iterating a collection that always grows may result into SCAN to never terminate a full iteration.
 ```
 scheduler.clearAllTasks();
@@ -152,7 +152,7 @@ let options = {
 let myLogger = new MyLogger();
 let scheduler = new Scheduler(options, myLogger);
 ```
-######options:
+#### options:
 Name | option | Default
 ------------ | ------------- | -------
 checkTasksEverySeconds | In task execution mode scheduler would wakeup every 'checkTasksEverySeconds' to check tasks. | 10 seconds
@@ -164,10 +164,10 @@ storage.instances[].host | Redis host url | 'localhost'
 storage.instances[].port | Redis host port | '6379'
 storage.masterIndex | Keep scheduling internal and external locks and metadata on this Redis instance, this Redis would take up most memory for the scheduling process. | 0 (first instance)
 
-##limitations
+## limitations
 - when setting the same task (by task id) twice the task is simply updated, the task interval and meta data is updated but **only after the task executes**, for example if the task interval is updated to 10 minutes instead of 1 minute then the task would be executed in 1 minute and then each 10 minutes.
 
-##performance
+## performance
 Method | Time | info
 ---------| --------| ------
 assignTask | O(Log(n)) | n is task bucket size (if M tasks should perform at N times then n = N)
