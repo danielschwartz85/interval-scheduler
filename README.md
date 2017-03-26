@@ -5,12 +5,12 @@ Dynamically schedule interval tasks
    then task status remains valid in Redis, i.e. tasks are guaranteed to be either set or unset).
  - Multiple schedulers can operate at the same time and assign the same tasks (same task can be scheduled twice, the second task is ignored). 
 
-#### Install with
+## Install with
 ```bash
 > npm install interval-scheduler
 ```
 
-#### Usage - Implement A Task object
+## Usage - Implement A Task object
 ``` 
 const Task = require('interval-scheduler').Task;
 
@@ -45,7 +45,7 @@ class MyTaskObject extends Task {
 }
 ```
 
-#### Usage - Scheduling
+## Usage - Scheduling
 ```
 const Scheduler = require('interval-scheduler').Scheduler;
 let scheduler = new Scheduler();
@@ -64,7 +64,7 @@ scheduler.startTaskExecute(serializedTask => {
 });
 ```
 
-#### Removing tasks
+## Removing tasks
 ```
 scheduler.startTaskAccept().then(() => {
     // remove tasks
@@ -73,7 +73,7 @@ scheduler.startTaskAccept().then(() => {
 });
 ```
 
-#### Stopping task execution
+## Stopping task execution
 ```
 scheduler.startTaskExecute(myExecutorFunction);
 scheduler.stopTaskExecute().then(() => {
@@ -83,7 +83,7 @@ scheduler.stopTaskExecute().then(() => {
  });
 ```
 
-#### Stopping task accept
+## Stopping task accept
 ```
 scheduler.startTaskExecute(myExecutorFunction);
 scheduler.stopTaskAccept().then(() => {
@@ -95,7 +95,7 @@ scheduler.stopTaskAccept().then(() => {
 });
 ```
 
-#### Locking task execution (auto release)
+## Locking task execution (auto release)
 ```
 scheduler.startTaskExecute(serializedTask => {
     let task = JSON.parse(serializedTask);
@@ -109,7 +109,7 @@ scheduler.startTaskExecute(serializedTask => {
 });
 ```
 
-#### Locking task execution (manual release)
+## Locking task execution (manual release)
 ```
 scheduler.startTaskExecute(serializedTask => {
     let task = JSON.parse(serializedTask);
@@ -127,7 +127,7 @@ scheduler.startTaskExecute(serializedTask => {
 });
 ```
 
-#### Clearing All tasks
+## Clearing All tasks
 Implemented with Redis [scan](https://redis.io/commands/scan) command,
 Note this limitation from Redis documentation
 >The SCAN algorithm is guaranteed to terminate only if the size of the iterated collection remains bounded to a given maximum size, otherwise iterating a collection that always grows may result into SCAN to never terminate a full iteration.
@@ -135,7 +135,7 @@ Note this limitation from Redis documentation
 scheduler.clearAllTasks();
 ```
 
-#### Configuring scheduler
+## Configuring scheduler
 ```
 let options = {
     storage : {
