@@ -159,7 +159,6 @@ let options = {
             { host: 'localhost', port: '8888', db: 0 }
         ],
         masterIndex : 0,
-        reconnectIntervalSeconds : 5,
         taskIntervalSeconds : 60
     },
     checkTasksEverySeconds : 60
