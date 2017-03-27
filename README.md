@@ -21,24 +21,32 @@ class MyTaskObject extends Task {
         this.userId = userId;
     }
 
-    // Serialize task to string
-    // return whatever, scheduler will call your handler with this string.
+    /*
+     * Serialize task to string
+     * return whatever, scheduler will call your handler with this string.
+     */
     serialize() {
         return JSON.stringify({ userId: this.userId, taskType: 'MyTask' });
     }
 
-    // Return task interval, on task execution the task would reschedule to 
-    // this interval. If not defined the task would execute once.
+    /*
+     * Return task interval, on task execution the task would reschedule to
+     * this interval. If not defined the task would execute once.
+     */
     get onExecuteRescheduleTo() {
         return 60; // run this task every minute.
     }
 
-    // First execution time (unix epoch).
+    /*
+     * First execution time (unix epoch).
+     */
     get executeOn() {
         return Date.now(); // first execution is as fast as possible.
     }
 
-    // Task id to globaly identify the task
+    /*
+     * Task id to globaly identify the task
+     */
     get id() {
         `user:${userId}`
     }
@@ -130,7 +138,7 @@ scheduler.startTaskExecute(myExecutorFunction);
 scheduler.stopTaskAccept().then(() => {
     // myExecutorFunction is still called  
     scheduler.acceptingTasks; // false
-    scheduler.assignTask(new MyTaskObject(1)) // Thorws - 'not accepting tasks'
+    scheduler.assignTask(new MyTaskObject(1)) // Throws - 'not accepting tasks'
 });
 ```
 
