@@ -165,14 +165,19 @@ Name | option | Default
 checkTasksEverySeconds | In task execution mode scheduler would wakeup every 'checkTasksEverySeconds' to check tasks. | 10 seconds
 storage | Storage options object | 
 storage.taskIntervalSeconds | Tasks execution time is rounded to this interval, for example if this value is set to 60 seconds then tasks would be scheduled to 1 minute interval. | 60 seconds
-storage.reconnectIntervalSeconds | On redis disconnect event try reconnecting every 'reconnectIntervalSeconds'. | 1 second
 storage.instances | Redis instances option array |
 storage.instances[].host | Redis host url | 'localhost'
 storage.instances[].port | Redis host port | '6379'
 storage.masterIndex | Keep scheduling internal and external locks and metadata on this Redis instance, this Redis would take up most memory for the scheduling process. | 0 (first instance)
 
-## Limitations
+## Important notes and limitations
 - When setting the same task (by task id) twice the task is simply updated, the task interval and meta data are updated but **only after the task executes**. For example if the task interval is updated to 10 minutes when it was 1 minute then the task would execute in 1 minute and then executed again every 10 minutes.
+- The scheduler has two operation modes:
+  1. acceptTasks - Tasks can be assigned and removed
+  2. executeTasks - The executor handler set in startTaskExecute(handler) is called with tasks that needs performing
+  - This means that the scheduler can have be assigned with tasks while it is not executing them, and so when the scheduler returns to execution mode the task's first execution time 'executeOn' may have already passed.
+  - In this case the scheduler would start executing the tasks in the order of their execution time (i.e. past tasks first), this would got on until there are no more tasks to perform (but future tasks). The scheduler would sleep and wait until more tasks should be performed.
+  - This scenario can occur also when the task load is too big / slow and so the scheduler **lags** behind and would preform past tasks first (untill it reaches a balanced state in which it has preformed all past and present tasks).
 
 ## Performance
 Method | Time | info

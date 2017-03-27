@@ -1,6 +1,6 @@
 {
   "name": "interval-scheduler",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "dynamically schedule interval tasks",
   "main": "./main.js",
   "scripts": {
