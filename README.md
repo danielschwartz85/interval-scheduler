@@ -52,27 +52,18 @@ class MyTaskObject extends Task {
     }
 }
 ```
-
-## Usage - Assigning tasks
+## Usage - connecting
 ```
-const Scheduler = require('interval-scheduler').Scheduler;
-let scheduler = new Scheduler();
-
-scheduler.startTaskAccept().then(() => {
-    scheduler.assignTask(new MyTaskObject(1));
-    scheduler.assignTask(new MyTaskObject(2));
+scheduler.connect().then(() => {
+    // can now assign, remove and execute tasks
 });
 ```
 
-## Removing tasks
+## Assigning tasks
 ```
-scheduler.startTaskAccept().then(() => {
-    scheduler.removeTask(new MyTaskObject(1));
-    scheduler.removeTask(new MyTaskObject(2));
-});
+scheduler.assignTask(new MyTaskObject(1));
 ```
-
-## Usage - Start Pulling tasks
+## Start Pulling tasks
 ```
 scheduler.startTaskExecute(myTaskExecutor);
 
@@ -85,6 +76,10 @@ let myTaskExecutor = (serializedTask) => {
 };
 ```
 
+## Removing tasks
+```
+scheduler.removeTask(new MyTaskObject(1));
+```
 
 ## Locking task execution (auto released)
 ```
@@ -128,18 +123,7 @@ scheduler.startTaskExecute(myExecutorFunction);
 scheduler.stopTaskExecute().then(() => {
      // myExecutorFunction will no longer be called
      scheduler.executingTasks; // false
-     scheduler.assignTask(new MyTaskObject(1)); // OK - tasks are still accepted
  });
-```
-
-## Stopping task accept
-```
-scheduler.startTaskExecute(myExecutorFunction);
-scheduler.stopTaskAccept().then(() => {
-    // myExecutorFunction is still called  
-    scheduler.acceptingTasks; // false
-    scheduler.assignTask(new MyTaskObject(1)) // Throws - 'not accepting tasks'
-});
 ```
 
 ## Clearing All tasks
@@ -149,6 +133,14 @@ Note this limitation from Redis documentation
 ```
 scheduler.clearAllTasks();
 ```
+
+## Events
+Event | info | args
+---------| --------| ------
+online | Scheduler is online and can accept tasks, If one of the non-master redises is down then his tasks could not be performed or removed but the scheduler would still accept tasks and perform them)|  
+offline | Scheduler is offline, the scheduler cannot accept remove or preform tasks |
+db-reconnect | A redis client has been re-connected | String of redis host:port
+db-disconnect | A redis client has been disconnected | String of redis host:port
 
 ## Configuring scheduler
 ```
@@ -179,12 +171,10 @@ storage.masterIndex | Keep scheduling internal and external locks and metadata o
 
 ## Important notes and limitations
 - When setting the same task (by task id) twice the task is simply updated, the task interval and meta data are updated but **only after the task executes**. For example if the task interval is updated to 10 minutes when it was 1 minute then the task would execute in 1 minute and then executed again every 10 minutes.
-- The scheduler has two operation modes:
-  1. acceptTasks - Tasks can be assigned and removed
-  2. executeTasks - The executor handler set in startTaskExecute(handler) is called with tasks that needs performing
-  - This means that the scheduler can have be assigned with tasks while it is not executing them, and so when the scheduler returns to execution mode the task's first execution time 'executeOn' may have already passed.
-  - In this case the scheduler would start executing the tasks in the order of their execution time (i.e. past tasks first), this would got on until there are no more tasks to perform (but future tasks). The scheduler would sleep and wait until more tasks should be performed.
-  - This scenario can occur also when the task load is too big / slow and so the scheduler **lags** behind and would preform past tasks first (untill it reaches a balanced state in which it has preformed all past and present tasks).
+- The scheduler task execution can be switched on and off by startTaskExecution() and stopTaskExecution().
+    - This means that the scheduler can have be assigned with tasks while it is not executing them, and so when the scheduler returns to execution mode the task's first execution time 'executeOn' may have already passed.
+    - In this case the scheduler would start executing the tasks in the order of their execution time (i.e. past tasks first), this would got on until there are no more tasks to perform (but future tasks). The scheduler would sleep and wait until more tasks should be performed.
+    - This scenario can also occur when the task load is too big / slow and so the scheduler **lags** behind and would preform past tasks first (untill it reaches a balanced state in which it has preformed all past and present tasks).
 
 ## Performance
 Method | Time | info

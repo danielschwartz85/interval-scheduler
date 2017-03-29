@@ -64,17 +64,6 @@ describe('scheduler', () => {
                 scheduler._acceptingTasks = false;
             }).then(done);
         });
-
-        it('should not assign task if scheduler is not accepting tasks', done => {
-            expect.spyOn(scheduler._storage, 'assignTask');
-            let task = new MockTask();
-            scheduler._acceptingTasks = false;
-            scheduler.assignTask(task).catch(err => {
-                expect(scheduler._storage.assignTask).toNotHaveBeenCalled();
-            }).then(() => {
-                scheduler._acceptingTasks = false;
-            }).then(done);
-        });
     });
 
     describe('removeTask', () => {
@@ -87,15 +76,6 @@ describe('scheduler', () => {
                 expect(scheduler._storage.removeTask).toHaveBeenCalledWith(task.id);
             }).then(() => {
                 scheduler._acceptingTasks = false;
-            }).then(done);
-        });
-
-        it('should not remove task if not accepting tasks', done => {
-            expect.spyOn(scheduler._storage, 'removeTask');
-            let task = new MockTask();
-            scheduler._acceptingTasks = false;
-            scheduler.removeTask(task).catch(err => {
-                expect(scheduler._storage.removeTask).toNotHaveBeenCalled();
             }).then(done);
         });
     });
@@ -167,52 +147,6 @@ describe('scheduler', () => {
             scheduler._startTaskPull();
             expect(scheduler._pullAndExecute).toNotHaveBeenCalled();
             done();
-        });
-    });
-
-    describe('startTaskAccept', () => {
-        it('should accept tasks and connect to storage', done => {
-            expect.spyOn(scheduler, '_setupStorage').andReturn(Promise.resolve());
-            scheduler._storage.mockConnected = false;
-            scheduler._acceptingTasks = false;
-            scheduler.startTaskAccept().then(res => {
-                expect(scheduler._setupStorage).toHaveBeenCalled();
-                expect(scheduler._acceptingTasks).toBe(true);
-            }).then(() => {
-                scheduler._acceptingTasks = false;
-            }).then(done);
-        });
-
-        it('should resolve if already accepting tasks', done => {
-            scheduler._acceptingTasks = true;
-            expect.spyOn(scheduler, '_setupStorage');
-            scheduler.startTaskAccept().then(res => {
-                expect(scheduler._setupStorage).toNotHaveBeenCalled();
-                expect(scheduler._acceptingTasks).toBe(true);
-            }).then(() => {
-                scheduler._acceptingTasks = false;
-            }).then(done)
-        });
-
-        it('should resolve not connect to storage if storage is connected', done => {
-            expect.spyOn(scheduler, '_setupStorage');
-            scheduler._storage.mockConnected = true;
-            scheduler._acceptingTasks = false;
-            scheduler.startTaskAccept().then(res => {
-                expect(scheduler._setupStorage).toNotHaveBeenCalled();
-                expect(scheduler._acceptingTasks).toBe(true);
-            }).then(() => {
-                scheduler._acceptingTasks = false;
-            }).then(done);
-        });
-    });
-
-    describe('stopTaskAccept', () => {
-        it('should stop task accept if accepting tasks', done => {
-            scheduler._acceptingTasks = true;
-            scheduler.stopTaskAccept().then(() => {
-                expect(scheduler._acceptingTasks).toBe(false);
-            }).then(done);
         });
     });
 });
