@@ -65,7 +65,7 @@ scheduler.assignTask(new MyTaskObject(1));
 ```
 ## Start Pulling tasks
 ```
-scheduler.startTaskExecute(myTaskExecutor);
+scheduler.startTaskExecute(myTaskExecutor); // scheduler should be connectd here
 
 let myTaskExecutor = (serializedTask) => {
     // 'serializedTask' is what task.serialize() returns.
