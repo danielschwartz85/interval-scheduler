@@ -733,4 +733,30 @@ describe('redisClient', () => {
         });
     });
 
+    describe('peekTask', () => {
+        it('should return a scheduled task data and metadata', done => {
+            redis._client.hgetallAsync = () => {};
+            expect.spyOn(redis._client, 'hgetallAsync').andCall(taskId => {
+                return Promise.resolve(`data and metadata of:${taskId}`);
+            });
+            let taskId = 'myTaskId';
+            redis.peekTask(taskId).then(data => {
+                expect(data).toBe(`data and metadata of:${redis._taskName(taskId)}`);
+                expect(redis._client.hgetallAsync).toHaveBeenCalledWith(redis._taskName(taskId));
+            }).then(done);
+        });
+
+    });
+    it('should return null for a task that is not scheduled ', done => {
+        redis._client.hgetallAsync = () => {};
+        expect.spyOn(redis._client, 'hgetallAsync').andCall(taskId => {
+            return Promise.resolve(null);
+        });
+        let taskId = 'myTaskId';
+        redis.peekTask(taskId).then(data => {
+            expect(data).toBe(null);
+            expect(redis._client.hgetallAsync).toHaveBeenCalledWith(redis._taskName(taskId));
+        }).then(done);
+    });
+
 });

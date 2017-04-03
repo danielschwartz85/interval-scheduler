@@ -78,7 +78,8 @@ let myTaskExecutor = (serializedTask) => {
 
 ## Removing tasks
 ```
-scheduler.removeTask(new MyTaskObject(1));
+let taskId = 1;
+scheduler.removeTask(taskId);
 ```
 
 ## Locking task execution (auto released)
@@ -132,6 +133,14 @@ Note this limitation from Redis documentation
 >The SCAN algorithm is guaranteed to terminate only if the size of the iterated collection remains bounded to a given maximum size, otherwise iterating a collection that always grows may result into SCAN to never terminate a full iteration.
 ```
 scheduler.clearAllTasks();
+```
+
+## Checking if task is scheduled
+```
+// this operation is not atomic
+scheduler.isScheduled(taskId).then(taskData => {
+    taskData // null or task data and metadata if task is scheduled
+});
 ```
 
 ## Events

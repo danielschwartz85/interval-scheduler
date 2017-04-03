@@ -71,7 +71,7 @@ describe('scheduler', () => {
             expect.spyOn(scheduler._storage, 'removeTask').andReturn(Promise.resolve(true));
             let task = new MockTask({ onExecuteRescheduleTo: null });
             scheduler._acceptingTasks = true;
-            scheduler.removeTask(task).then(res => {
+            scheduler.removeTask(task.id).then(res => {
                 expect(res).toBe(true);
                 expect(scheduler._storage.removeTask).toHaveBeenCalledWith(task.id);
             }).then(() => {

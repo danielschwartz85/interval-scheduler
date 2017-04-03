@@ -5,9 +5,21 @@ describe('redisStorage', () => {
 
     let storage;
     let mockClients = [
-        { schedule: () => {}, connected: true, isScheduled: () => {} },
-        { schedule: () => {}, connected: true, isScheduled: () => {} },
-        { schedule: () => {}, connected: true, isScheduled: () => {} }
+        {   schedule: () => {},
+            connected: true,
+            isScheduled: () => {},
+            foo: () => {}
+        },
+        {   schedule: () => {},
+            connected: true,
+            isScheduled: () => {},
+            foo: () => {}
+        },
+        {   schedule: () => {},
+            connected: true,
+            isScheduled: () => {},
+            foo: () => {}
+        }
     ];
 
     before(done => {
@@ -19,7 +31,7 @@ describe('redisStorage', () => {
             reconnectIntervalSeconds : 1,
             taskIntervalSeconds : 60
         };
-        storage = new Storage(config);
+        storage = new MockStorage(config, mockClients);
         storage._allClients = mockClients;
 
         expect.spyOn(storage, 'connect').andCall(() => {
@@ -120,32 +132,32 @@ describe('redisStorage', () => {
 
     describe('_isScheduledCancel', () => {
         it('should resolve with true if task is scheduled', done => {
-            expect.spyOn(storage, '_someClient').andCall((...args) => {
+            expect.spyOn(storage, '_someClientRace').andCall((...args) => {
                 return Promise.resolve(true);
             });
 
             let taskId = 'myTaskId';
             storage._isScheduledCancel(taskId).then(scheduled => {
                 expect(scheduled).toBe(true);
-                expect(storage._someClient).toHaveBeenCalledWith('isScheduledCancel', taskId);
+                expect(storage._someClientRace).toHaveBeenCalledWith('isScheduledCancel', taskId);
             }).then(done);
         });
 
         it('should resolve with false if task is not scheduled in any client', done => {
-            expect.spyOn(storage, '_someClient').andCall((...args) => {
+            expect.spyOn(storage, '_someClientRace').andCall((...args) => {
                 return Promise.resolve(false);
             });
 
             let taskId = 'myTaskId'
             storage._isScheduledCancel(taskId).then(scheduled => {
-                expect(storage._someClient).toHaveBeenCalledWith('isScheduledCancel', taskId);
+                expect(storage._someClientRace).toHaveBeenCalledWith('isScheduledCancel', taskId);
             }).then(done);
         });
     });
 
     describe('_isScheduledUpdate', () => {
         it('should resolve with true if task is scheduled', done => {
-            expect.spyOn(storage, '_someClient').andCall((...args) => {
+            expect.spyOn(storage, '_someClientRace').andCall((...args) => {
                 return Promise.resolve(true);
             });
 
@@ -154,12 +166,12 @@ describe('redisStorage', () => {
             let interval = 5;
             storage._isScheduledUpdate(taskId, data, interval).then(scheduled => {
                 expect(scheduled).toBe(true);
-                expect(storage._someClient).toHaveBeenCalledWith('isScheduledUpdate', taskId, data, interval);
+                expect(storage._someClientRace).toHaveBeenCalledWith('isScheduledUpdate', taskId, data, interval);
             }).then(done);
         });
 
         it('should resolve with false if task is not scheduled in any client', done => {
-            expect.spyOn(storage, '_someClient').andCall((...args) => {
+            expect.spyOn(storage, '_someClientRace').andCall((...args) => {
                 return Promise.resolve(false);
             });
 
@@ -167,7 +179,7 @@ describe('redisStorage', () => {
             let data = { myData: true };
             let interval = 5;
             storage._isScheduledUpdate(taskId, data, interval).then(scheduled => {
-                expect(storage._someClient).toHaveBeenCalledWith('isScheduledUpdate', taskId, data, interval);
+                expect(storage._someClientRace).toHaveBeenCalledWith('isScheduledUpdate', taskId, data, interval);
             }).then(done);
         });
     });
@@ -274,7 +286,7 @@ describe('redisStorage', () => {
         });
     });
 
-    describe('_someClient', () => {
+    describe('_someClientRace', () => {
         it('should return 5 since one client returned 5', done => {
             storage._onlineClients.forEach((client, i) => {
                 expect.spyOn(client, 'isScheduled').andCall((...args) => {
@@ -283,7 +295,7 @@ describe('redisStorage', () => {
             });
 
             let myArgs = [1,2,3];
-            storage._someClient('isScheduled', ...myArgs).then(res => {
+            storage._someClientRace('isScheduled', ...myArgs).then(res => {
                 expect(res).toBe(5);
                 storage._onlineClients.forEach(client => {
                     expect(client.isScheduled).toHaveBeenCalledWith(...myArgs);
@@ -299,7 +311,7 @@ describe('redisStorage', () => {
             });
 
             let myArgs = [1,2,3];
-            storage._someClient('isScheduled', ...myArgs).then(res => {
+            storage._someClientRace('isScheduled', ...myArgs).then(res => {
                 expect(res).toNotExist();
                 storage._onlineClients.forEach(client => {
                     expect(client.isScheduled).toHaveBeenCalledWith(...myArgs);
@@ -374,13 +386,13 @@ describe('redisStorage', () => {
         });
     });
 
-    describe('_someClient', () => {
+    describe('_someClientRace', () => {
         it('should resolve with clients value if one online client resolves', done => {
             mockClients.forEach((client, i) => {
                 expect.spyOn(client, 'isScheduled').andReturn(Promise.resolve(2 === i ? 'yes' : false));
             });
             let args = [1,2,3];
-            storage._someClient('isScheduled', ...args).then(response => {
+            storage._someClientRace('isScheduled', ...args).then(response => {
                 expect(response).toBe('yes');
                 mockClients.forEach(client => {
                     expect(client.isScheduled).toHaveBeenCalledWith(...args);
@@ -393,7 +405,7 @@ describe('redisStorage', () => {
                 expect.spyOn(client, 'isScheduled').andReturn(Promise.resolve(false));
             });
             let args = [1,2,3];
-            storage._someClient('isScheduled', ...args).then(response => {
+            storage._someClientRace('isScheduled', ...args).then(response => {
                 expect(response).toBe(undefined);
                 mockClients.forEach(client => {
                     expect(client.isScheduled).toHaveBeenCalledWith(...args);
@@ -402,4 +414,117 @@ describe('redisStorage', () => {
         });
     });
 
+    describe('_someClientIterate', () => {
+        it("should resolve with 2nd client value and execute only first 2 client's methods", done => {
+            mockClients.forEach((client, i) => {
+                expect.spyOn(client, 'foo').andReturn(Promise.resolve(1 === i));
+            });
+            let myArgs = ['a1','a2','a3'];
+            storage._someClientIterate('foo', ...myArgs).then(result => {
+                expect(result).toBe(true);
+                mockClients.forEach((client, i) => {
+                    if (i <= 1) {
+                        expect(client.foo).toHaveBeenCalledWith(...myArgs);
+                    } else {
+                        expect(client.foo).toNotHaveBeenCalled();
+                    }
+                });
+            }).then(done);
+        });
+
+        it("should resolve with 3rd client value and execute all 3 client's methods", done => {
+            mockClients.forEach((client, i) => {
+                expect.spyOn(client, 'foo').andReturn(Promise.resolve(2 === i));
+            });
+            let myArgs = ['a1','a2','a3'];
+            storage._someClientIterate('foo', ...myArgs).then(result => {
+                expect(result).toBe(true);
+                mockClients.forEach((client, i) => {
+                    expect(client.foo).toHaveBeenCalledWith(...myArgs);
+                });
+            }).then(done);
+        });
+
+        it("should resolve with 1st client value and execute only first client method", done => {
+            mockClients.forEach((client, i) => {
+                expect.spyOn(client, 'foo').andReturn(Promise.resolve(0 === i));
+            });
+            let myArgs = ['a1','a2','a3'];
+            storage._someClientIterate('foo', ...myArgs).then(result => {
+                expect(result).toBe(true);
+                mockClients.forEach((client, i) => {
+                    if (i === 0) {
+                        expect(client.foo).toHaveBeenCalledWith(...myArgs);
+                    } else {
+                        expect(client.foo).toNotHaveBeenCalled();
+                    }
+                });
+            }).then(done);
+        });
+
+        it("should resolve with false and execute all client's method (all return false)", done => {
+            mockClients.forEach((client, i) => {
+                expect.spyOn(client, 'foo').andReturn(Promise.resolve(false));
+            });
+            let myArgs = ['a1','a2','a3'];
+            storage._someClientIterate('foo', ...myArgs).then(result => {
+                expect(result).toBe(false);
+                mockClients.forEach((client, i) => {
+                    expect(client.foo).toHaveBeenCalledWith(...myArgs);
+                });
+            }).then(done);
+        });
+
+        it("should resolve with 3rd client value even if the rest of the clients reject", done => {
+            mockClients.forEach((client, i) => {
+                expect.spyOn(client, 'foo').andReturn(2 !== i ? Promise.reject(true) : Promise.resolve(true));
+            });
+            let myArgs = ['a1','a2','a3'];
+            storage._someClientIterate('foo', ...myArgs).then(result => {
+                expect(result).toBe(true);
+                mockClients.forEach((client, i) => {
+                    expect(client.foo).toHaveBeenCalledWith(...myArgs);
+                });
+            }).then(done);
+        });
+
+        it("should resolve with falsy value if all the clients reject", done => {
+            mockClients.forEach((client, i) => {
+                expect.spyOn(client, 'foo').andReturn(Promise.reject(true));
+            });
+            let myArgs = ['a1','a2','a3'];
+            storage._someClientIterate('foo', ...myArgs).then(result => {
+                expect(!!result).toBe(false);
+                mockClients.forEach((client, i) => {
+                    expect(client.foo).toHaveBeenCalledWith(...myArgs);
+                });
+            }).then(done);
+        });
+
+        it("should resolve with falsy value if all the clients reject and 3rd client returns false", done => {
+            mockClients.forEach((client, i) => {
+                expect.spyOn(client, 'foo').andReturn(2 !== i ? Promise.reject(true) : Promise.resolve(false));
+            });
+            let myArgs = ['a1','a2','a3'];
+            storage._someClientIterate('foo', ...myArgs).then(result => {
+                expect(!!result).toBe(false);
+                mockClients.forEach((client, i) => {
+                    expect(client.foo).toHaveBeenCalledWith(...myArgs);
+                });
+            }).then(done);
+        });
+    });
+
 });
+
+class MockStorage extends Storage {
+
+    constructor(c = {}, mc) {
+        super(c);
+        this.mc = mc;
+    }
+
+    get _onlineClients() {
+        return this.mc;
+    }
+}
