@@ -734,29 +734,43 @@ describe('redisClient', () => {
     });
 
     describe('peekTask', () => {
-        it('should return a scheduled task data and metadata', done => {
-            redis._client.hgetallAsync = () => {};
-            expect.spyOn(redis._client, 'hgetallAsync').andCall(taskId => {
-                return Promise.resolve(`data and metadata of:${taskId}`);
+        it('should return a scheduled task data', done => {
+            redis._client.hmgetAsync = () => {};
+            expect.spyOn(redis._client, 'hmgetAsync').andCall((taskId, ...keys) => {
+                return Promise.resolve(['false', JSON.stringify(myTaskData)]);
             });
             let taskId = 'myTaskId';
+            let myTaskData = {myTask: true};
             redis.peekTask(taskId).then(data => {
-                expect(data).toBe(`data and metadata of:${redis._taskName(taskId)}`);
-                expect(redis._client.hgetallAsync).toHaveBeenCalledWith(redis._taskName(taskId));
+                expect(data).toBe(JSON.stringify(myTaskData));
+                expect(redis._client.hmgetAsync).toHaveBeenCalledWith(redis._taskName(taskId), 'data', 'canceled');
             }).then(done);
         });
 
-    });
-    it('should return null for a task that is not scheduled ', done => {
-        redis._client.hgetallAsync = () => {};
-        expect.spyOn(redis._client, 'hgetallAsync').andCall(taskId => {
-            return Promise.resolve(null);
+        it('should return null for a canceled task', done => {
+            redis._client.hmgetAsync = () => {};
+            expect.spyOn(redis._client, 'hmgetAsync').andCall((taskId, ...keys) => {
+                return Promise.resolve(['true',JSON.stringify(myTaskData)]);
+            });
+            let taskId = 'myTaskId';
+            let myTaskData = {myTask: true};
+            redis.peekTask(taskId).then(data => {
+                expect(data).toBe(null);
+                expect(redis._client.hmgetAsync).toHaveBeenCalledWith(redis._taskName(taskId), 'data', 'canceled');
+            }).then(done);
         });
-        let taskId = 'myTaskId';
-        redis.peekTask(taskId).then(data => {
-            expect(data).toBe(null);
-            expect(redis._client.hgetallAsync).toHaveBeenCalledWith(redis._taskName(taskId));
-        }).then(done);
+
+        it('should return null for a task that is not scheduled', done => {
+            redis._client.hmgetAsync = () => {};
+            expect.spyOn(redis._client, 'hmgetAsync').andCall((taskId, ...keys) => {
+                return Promise.resolve([null, null]);
+            });
+            let taskId = 'myTaskId';
+            redis.peekTask(taskId).then(data => {
+                expect(data).toBe(null);
+                expect(redis._client.hmgetAsync).toHaveBeenCalledWith(redis._taskName(taskId), 'data', 'canceled');
+            }).then(done);
+        });
     });
 
 });

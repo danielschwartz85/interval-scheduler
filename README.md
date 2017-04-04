@@ -132,16 +132,26 @@ Implemented with Redis [scan](https://redis.io/commands/scan) command,
 Note this limitation from Redis documentation
 >The SCAN algorithm is guaranteed to terminate only if the size of the iterated collection remains bounded to a given maximum size, otherwise iterating a collection that always grows may result into SCAN to never terminate a full iteration.
 ```
-scheduler.clearAllTasks();
+scheduler.clearAllTasks().then(removedTasksCount => {
+    console.log(`removed ${removedTasksCount} tasks`);
+});
 ```
+*Under current implementation tasks are really cleared from Redis when the task is pulled 
+from the queue (execution time), this means that if a task is rescheduled after being removed 
+then the task's first execution would be the old execution time.*
 
 ## Checking if task is scheduled
 ```
-// this operation is not atomic
 scheduler.isScheduled(taskId).then(taskData => {
-    taskData // null or task data and metadata if task is scheduled
+    if (taskData) {
+        console.log(`task ${JSON.stringify(taskData)} is scheduled`); // task {"userId":1,"taskType":"MyTask"} is scheduled
+    } else {
+        console.log(`task ${taskId} is not scheduled`); 
+    }
 });
 ```
+*Not atomic, returns task if it is scheduled at the time of execution*
+
 
 ## Events
 Event | info | args
@@ -150,6 +160,7 @@ online | Scheduler is online and can accept tasks, If one of the non-master redi
 offline | Scheduler is offline, the scheduler cannot accept remove or preform tasks |
 db-reconnect | A redis client has been re-connected | String of redis host:port
 db-disconnect | A redis client has been disconnected | String of redis host:port
+
 
 ## Configuring scheduler
 ```
@@ -178,6 +189,7 @@ storage.instances[].host | Redis host url | 'localhost'
 storage.instances[].port | Redis host port | '6379'
 storage.masterIndex | Keep scheduling internal and external locks and metadata on this Redis instance, this Redis would take up most memory for the scheduling process. | 0 (first instance)
 
+
 ## Important notes and limitations
 - When setting the same task (by task id) twice the task is simply updated, the task interval and meta data are updated but **only after the task executes**. For example if the task interval is updated to 10 minutes when it was 1 minute then the task would execute in 1 minute and then executed again every 10 minutes.
 - The scheduler task execution can be switched on and off by startTaskExecution() and stopTaskExecution().
@@ -185,11 +197,13 @@ storage.masterIndex | Keep scheduling internal and external locks and metadata o
     - In this case the scheduler would start executing the tasks in the order of their execution time (i.e. past tasks first), this would got on until there are no more tasks to perform (but future tasks). The scheduler would sleep and wait until more tasks should be performed.
     - This scenario can also occur when the task load is too big / slow and so the scheduler **lags** behind and would preform past tasks first (untill it reaches a balanced state in which it has preformed all past and present tasks).
 
+
 ## Performance
 Method | Time | info
 ---------| --------| ------
 assignTask | O(Log(N)) | N is task bucket size (if M tasks should perform at K times then N = K)
 removeTask | O(1) | 
 when executing tasks each task peek | O(1) | This is the operation that occurs every 'checkTasksEverySeconds' seconds 
-clearAllTasks | O(N) | while N is the number of tasks (but done in iterations to protect redis CPU) 
+clearAllTasks | O(N) | while N is the number of tasks 
+isScheduled | O(1) |
 
