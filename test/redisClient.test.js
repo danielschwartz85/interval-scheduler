@@ -737,7 +737,7 @@ describe('redisClient', () => {
         it('should return a scheduled task data', done => {
             redis._client.hmgetAsync = () => {};
             expect.spyOn(redis._client, 'hmgetAsync').andCall((taskId, ...keys) => {
-                return Promise.resolve(['false', JSON.stringify(myTaskData)]);
+                return Promise.resolve([JSON.stringify(myTaskData), 'false']);
             });
             let taskId = 'myTaskId';
             let myTaskData = {myTask: true};
@@ -750,7 +750,7 @@ describe('redisClient', () => {
         it('should return null for a canceled task', done => {
             redis._client.hmgetAsync = () => {};
             expect.spyOn(redis._client, 'hmgetAsync').andCall((taskId, ...keys) => {
-                return Promise.resolve(['true',JSON.stringify(myTaskData)]);
+                return Promise.resolve([JSON.stringify(myTaskData), 'true']);
             });
             let taskId = 'myTaskId';
             let myTaskData = {myTask: true};
