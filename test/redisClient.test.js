@@ -32,11 +32,11 @@ describe('lua', () => {
             });
         });
 
-        it('should return 1 for existing key (with cancel true) un cancel it, update its data and interval', done => {
+        it('should return 2 for existing key (with cancel true) un cancel it, update its data and interval', done => {
             redis._client.hmsetAsync('myKey', 'canceled', true, 'data', 'someValue', 'interval', 456).then(() => {
                 return redis._lua('EXISTSUPDATE', 'myKey', 'updatedData', 789);
             }).then(exists => {
-                expect(exists).toBe(1);
+                expect(exists).toBe(2);
             }).then(() => {
                 return redis._client.hmgetAsync('myKey', 'canceled', 'data', 'interval');
             }).then(memberValues => {
@@ -49,11 +49,11 @@ describe('lua', () => {
             }).then(done);
         });
 
-        it('should return 1 for existing key (with cancel true) un cancel it and update its data but not its interval', done => {
+        it('should return 2 for existing key (with cancel true) un cancel it and update its data but not its interval', done => {
             redis._client.hmsetAsync('myKey', 'canceled', true, 'data', 'someValue', 'interval', 456).then(() => {
                 return redis._lua('EXISTSUPDATE', 'myKey', 'updatedData');
             }).then(exists => {
-                expect(exists).toBe(1);
+                expect(exists).toBe(2);
             }).then(() => {
                 return redis._client.hmgetAsync('myKey', 'canceled', 'data', 'interval');
             }).then(memberValues => {
@@ -109,11 +109,11 @@ describe('lua', () => {
             });
         });
 
-        it('should return 0 for existing key (with cancel false) and cancel it', done => {
+        it('should return 1 for existing key (with cancel false) and cancel it', done => {
             redis._client.hmsetAsync('myKey', 'canceled', false, 'otherMember', 'someValue').then(() => {
                 return redis._lua('EXISTSDISABLE', 'myKey');
             }).then(enabled => {
-                expect(enabled).toBe(0);
+                expect(enabled).toBe(1);
             }).then(() => {
                 return redis._client.hgetAsync('myKey', 'canceled');
             }).then(memberValue => {

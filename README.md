@@ -63,6 +63,7 @@ scheduler.connect().then(() => {
 ```
 scheduler.assignTask(new MyTaskObject(1));
 ```
+This assigns the task and returns true or updates an existing task and returns false
 ## Start Pulling tasks
 ```
 scheduler.startTaskExecute(myTaskExecutor); // scheduler should be connectd here
@@ -81,7 +82,7 @@ let myTaskExecutor = (serializedTask) => {
 let taskId = 1;
 scheduler.removeTask(taskId);
 ```
-
+Return true if task was removed
 ## Locking task execution (auto released)
 ```
 scheduler.startTaskExecute(myExecutor);
