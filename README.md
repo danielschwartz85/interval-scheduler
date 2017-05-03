@@ -207,4 +207,6 @@ removeTask | O(1) |
 when executing tasks each task peek | O(1) | This is the operation that occurs every 'checkTasksEverySeconds' seconds 
 clearAllTasks | O(N) | while N is the number of tasks 
 isScheduled | O(1) |
+taskSize | O(N) | where N is the number of redis keys
+queueSize | O(Log(N)) | where N is task bucket size
 
