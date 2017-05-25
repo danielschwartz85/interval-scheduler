@@ -1,5 +1,7 @@
+<div align="center"><img src="https://capriza.github.io/images/logos/logos-scheduler.png" height="128" /></div>
+<div align="center"><div>Dynamically schedule interval tasks</div></div>
+
 # interval-scheduler
-Dynamically schedule interval tasks
  - Support for Redis partitioning (can use multiple Redis DBs)
  - Stateless (If scheduler process crashes and then brought back to life 
    then task status remains valid in Redis, i.e. tasks are guaranteed to be either set or unset).
