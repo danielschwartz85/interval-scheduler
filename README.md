@@ -1,4 +1,4 @@
-<div align="center"><img src="https://capriza.github.io/images/logos/logos-scheduler.png" height="128" /></div>
+<div align="center"><img src="https://capriza.github.io/images/logos/logos-scheduler.svg" height="128" /></div>
 <div align="center"><div>Dynamically schedule interval tasks</div></div>
 
 # interval-scheduler
